@@ -1,0 +1,806 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}FoodExpress - Place Order{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #e74c3c;
+        --primary-dark: #c0392b;
+        --secondary-color: #f39c12;
+        --success-color: #27ae60;
+        --bg-light: #f8f9fa;
+        --text-dark: #2c3e50;
+        --border-radius: 15px;
+        --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding-bottom: 2rem;
+    }
+
+    .order-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .page-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+
+    .card-modern {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .card-header-modern {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header-modern i {
+        font-size: 1.8rem;
+    }
+
+    .card-body-modern {
+        padding: 2rem;
+    }
+
+    /* Category Tabs */
+    .category-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.1);
+        border-radius: var(--border-radius);
+        backdrop-filter: blur(10px);
+    }
+
+    .category-tab {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .category-tab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .category-tab.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+
+    /* Menu Items Grid */
+    .menu-items-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .menu-items-container {
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+        }
+        
+        .menu-item-image {
+            height: 120px;
+            font-size: 1.5rem;
+        }
+        
+        .menu-item-body {
+            padding: 0.75rem;
+        }
+        
+        .menu-item-name {
+            font-size: 0.9rem;
+        }
+        
+        .menu-item-description {
+            font-size: 0.7rem;
+            min-height: 30px;
+        }
+        
+        .menu-item-price {
+            font-size: 1rem;
+        }
+    }
+
+    .menu-item-card {
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .menu-item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .menu-item-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .menu-item-body {
+        padding: 1rem;
+    }
+
+    .menu-item-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.4rem;
+    }
+
+    .menu-item-description {
+        color: #7f8c8d;
+        font-size: 0.75rem;
+        margin-bottom: 0.75rem;
+        min-height: 35px;
+        line-height: 1.4;
+    }
+
+    .menu-item-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+
+    .menu-item-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    /* Quantity Controls */
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--bg-light);
+        border-radius: 20px;
+        padding: 0.2rem;
+    }
+
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qty-btn:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+    }
+
+    .qty-btn:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .qty-display {
+        min-width: 30px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+    }
+
+    .qty-display.zero {
+        color: #95a5a6;
+    }
+
+    /* Order Summary */
+    .order-summary {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #ecf0f1;
+        align-items: center;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-item-name {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .summary-item-qty {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .summary-item-price {
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .summary-total {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 3rem;
+        color: #95a5a6;
+    }
+
+    .empty-cart i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--success-color) 0%, #229954 100%);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    }
+
+    .btn-submit:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .category-section {
+        display: none;
+    }
+
+    .category-section.active {
+        display: block;
+    }
+
+    .form-group-modern {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group-modern label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #ecf0f1;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+
+    /* Customer Information Row */
+    .customer-info-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    @media (max-width: 768px) {
+        .customer-info-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Search Bar */
+    .search-container {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #ecf0f1;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #95a5a6;
+        font-size: 1.1rem;
+    }
+
+    .menu-item-card.hidden {
+        display: none;
+    }
+
+    .no-results-message {
+        grid-column: 1 / -1;
+        padding: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-container">
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-cart"></i> Place Your Order</h1>
+        <p>Select your favorite dishes and customize your order</p>
+    </div>
+
+    <form method="post" id="order-form">
+        {% csrf_token %}
+        
+        <!-- Customer Information - Top Section -->
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <i class="fas fa-user"></i>
+                <span>Your Information</span>
+            </div>
+            <div class="card-body-modern">
+                <div class="customer-info-row">
+                    <div class="form-group-modern">
+                        <label for="id_name">Name *</label>
+                        <input type="text" name="name" id="id_name" class="form-control-modern" required 
+                               value="{{ customer_form.name.value|default:'' }}" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group-modern">
+                        <label for="id_phone">Phone *</label>
+                        <input type="text" name="phone" id="id_phone" class="form-control-modern" required 
+                               value="{{ customer_form.phone.value|default:'' }}" placeholder="Enter your phone number">
+                    </div>
+                    <div class="form-group-modern">
+                        <label for="id_address">Address *</label>
+                        <input type="text" name="address" id="id_address" class="form-control-modern" 
+                               value="{{ customer_form.address.value|default:'' }}" placeholder="Enter your delivery address">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Menu Section -->
+            <div class="col-lg-8 mb-4">
+                <div class="card-modern">
+                <div class="card-header-modern">
+                    <i class="fas fa-utensils"></i>
+                    <span>Menu</span>
+                </div>
+                <div class="card-body-modern">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="product-search" class="search-input" placeholder="Search for products...">
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="category-tabs" id="category-tabs">
+                        {% for category in categories %}
+                        <button type="button" class="category-tab {% if forloop.first %}active{% endif %}" 
+                                data-category="{{ category.id }}">
+                            {% if category.icon %}
+                            <i class="fas {{ category.icon }}"></i>
+                            {% else %}
+                            <i class="fas fa-tag"></i>
+                            {% endif %}
+                            <span>{{ category.name }}</span>
+                        </button>
+                        {% endfor %}
+                        {% if menu_items_no_category %}
+                        <button type="button" class="category-tab {% if not categories %}active{% endif %}" 
+                                data-category="none">
+                            <i class="fas fa-list"></i>
+                            <span>Other Items</span>
+                        </button>
+                        {% endif %}
+                    </div>
+    
+                    <!-- Category Sections -->
+                    {% for category in categories %}
+                    <div class="category-section {% if forloop.first %}active{% endif %}" data-category="{{ category.id }}">
+                        <h3 class="mb-3" style="color: var(--text-dark); font-weight: 700;">
+                            {% if category.icon %}<i class="fas {{ category.icon }} me-2"></i>{% endif %}
+                            {{ category.name }}
+                        </h3>
+                        {% if category.description %}
+                        <p class="text-muted mb-4">{{ category.description }}</p>
+                        {% endif %}
+                        <div class="menu-items-container">
+                            {% for item in category.menu_items.all %}
+                            {% if item.is_available %}
+                            <div class="menu-item-card" data-item-id="{{ item.id }}" data-price="{{ item.price }}">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-item-image">
+                                {% else %}
+                                <div class="menu-item-image">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                {% endif %}
+                                <div class="menu-item-body">
+                                    <div class="menu-item-name">{{ item.name }}</div>
+                                    {% if item.description %}
+                                    <div class="menu-item-description">{{ item.description|truncatewords:15 }}</div>
+                                    {% else %}
+                                    <div class="menu-item-description">Delicious {{ item.name }} prepared with fresh ingredients</div>
+                                    {% endif %}
+                                    <div class="menu-item-footer">
+                                        <div class="menu-item-price">{{ item.price }} ৳</div>
+                                        <div class="quantity-controls">
+                                            <button type="button" class="qty-btn qty-decrease" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="qty-display zero" id="qty-{{ item.id }}">0</span>
+                                            <button type="button" class="qty-btn qty-increase" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+    
+                    {% if menu_items_no_category %}
+                    <div class="category-section {% if not categories %}active{% endif %}" data-category="none">
+                        <h3 class="mb-3" style="color: var(--text-dark); font-weight: 700;">
+                            <i class="fas fa-list me-2"></i>Other Items
+                        </h3>
+                        <div class="menu-items-container">
+                            {% for item in menu_items_no_category %}
+                            <div class="menu-item-card" data-item-id="{{ item.id }}" data-price="{{ item.price }}">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-item-image">
+                                {% else %}
+                                <div class="menu-item-image">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                {% endif %}
+                                <div class="menu-item-body">
+                                    <div class="menu-item-name">{{ item.name }}</div>
+                                    {% if item.description %}
+                                    <div class="menu-item-description">{{ item.description|truncatewords:15 }}</div>
+                                    {% else %}
+                                    <div class="menu-item-description">Delicious {{ item.name }} prepared with fresh ingredients</div>
+                                    {% endif %}
+                                    <div class="menu-item-footer">
+                                        <div class="menu-item-price">{{ item.price }} ৳</div>
+                                        <div class="quantity-controls">
+                                            <button type="button" class="qty-btn qty-decrease" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="qty-display zero" id="qty-{{ item.id }}">0</span>
+                                            <button type="button" class="qty-btn qty-increase" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4 mb-4">
+                <div class="card-modern order-summary">
+                    <div class="card-header-modern">
+                        <i class="fas fa-receipt"></i>
+                        <span>Order Summary</span>
+                    </div>
+                    <div class="card-body-modern">
+                        <div id="order-items-container">
+                            <div class="empty-cart">
+                                <i class="fas fa-shopping-basket"></i>
+                                <p>Your cart is empty</p>
+                                <p class="text-muted">Select items from the menu to add them to your order</p>
+                            </div>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total:</span>
+                            <span id="order-total">$0.00</span>
+                        </div>
+                        <button type="submit" class="btn-submit" id="submit-btn" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let cart = {}; // {itemId: quantity}
+
+        // Product Search
+        $('#product-search').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase().trim();
+            filterProducts(searchTerm);
+        });
+
+        function filterProducts(searchTerm) {
+            $('.menu-item-card').each(function() {
+                const itemName = $(this).find('.menu-item-name').text().toLowerCase();
+                const itemDescription = $(this).find('.menu-item-description').text().toLowerCase();
+                
+                if (searchTerm === '' || itemName.includes(searchTerm) || itemDescription.includes(searchTerm)) {
+                    $(this).removeClass('hidden');
+                } else {
+                    $(this).addClass('hidden');
+                }
+            });
+
+            // Show message if no results
+            const visibleItems = $('.menu-item-card:not(.hidden)').length;
+            if (searchTerm !== '' && visibleItems === 0) {
+                // Check if no results message already exists
+                if ($('.no-results-message').length === 0) {
+                    $('.menu-items-container').first().after(
+                        '<div class="no-results-message text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No products found matching "' + searchTerm + '"</p></div>'
+                    );
+                }
+            } else {
+                $('.no-results-message').remove();
+            }
+        }
+
+        // Category tab switching
+        $('.category-tab').click(function() {
+            const categoryId = $(this).data('category');
+            
+            // Update active tab
+            $('.category-tab').removeClass('active');
+            $(this).addClass('active');
+            
+            // Update active section
+            $('.category-section').removeClass('active');
+            $(`.category-section[data-category="${categoryId}"]`).addClass('active');
+            
+            // Clear search when switching categories
+            $('#product-search').val('');
+            filterProducts('');
+        });
+
+        // Increase quantity
+        $('.qty-increase').click(function() {
+            const itemId = $(this).data('item-id');
+            const currentQty = cart[itemId] || 0;
+            cart[itemId] = currentQty + 1;
+            updateQuantityDisplay(itemId);
+            updateOrderSummary();
+        });
+
+        // Decrease quantity
+        $('.qty-decrease').click(function() {
+            const itemId = $(this).data('item-id');
+            const currentQty = cart[itemId] || 0;
+            if (currentQty > 0) {
+                cart[itemId] = currentQty - 1;
+                if (cart[itemId] === 0) {
+                    delete cart[itemId];
+                }
+                updateQuantityDisplay(itemId);
+                updateOrderSummary();
+            }
+        });
+
+        function updateQuantityDisplay(itemId) {
+            const qty = cart[itemId] || 0;
+            const qtyDisplay = $(`#qty-${itemId}`);
+            qtyDisplay.text(qty);
+            
+            if (qty === 0) {
+                qtyDisplay.addClass('zero');
+            } else {
+                qtyDisplay.removeClass('zero');
+            }
+
+            // Update button states
+            const decreaseBtn = $(`.qty-decrease[data-item-id="${itemId}"]`);
+            decreaseBtn.prop('disabled', qty === 0);
+        }
+
+        function updateOrderSummary() {
+            const container = $('#order-items-container');
+            const totalPrice = calculateTotal();
+            
+            if (Object.keys(cart).length === 0) {
+                container.html(`
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-basket"></i>
+                        <p>Your cart is empty</p>
+                        <p class="text-muted">Select items from the menu to add them to your order</p>
+                    </div>
+                `);
+                $('#submit-btn').prop('disabled', true);
+            } else {
+                let html = '';
+                for (const itemId in cart) {
+                    const qty = cart[itemId];
+                    const itemCard = $(`.menu-item-card[data-item-id="${itemId}"]`);
+                    const itemName = itemCard.find('.menu-item-name').text();
+                    const itemPrice = parseFloat(itemCard.data('price'));
+                    const itemTotal = itemPrice * qty;
+                    
+                    html += `
+                        <div class="summary-item">
+                            <div class="summary-item-name">${itemName}</div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <span class="summary-item-qty">${qty}x</span>
+                                <span class="summary-item-price">$${itemTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.html(html);
+                $('#submit-btn').prop('disabled', false);
+            }
+            
+            $('#order-total').text('$' + totalPrice.toFixed(2));
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (const itemId in cart) {
+                const qty = cart[itemId];
+                const itemCard = $(`.menu-item-card[data-item-id="${itemId}"]`);
+                const itemPrice = parseFloat(itemCard.data('price'));
+                total += itemPrice * qty;
+            }
+            return total;
+        }
+
+        // Form submission
+        $('#order-form').submit(function(e) {
+            if (Object.keys(cart).length === 0) {
+                e.preventDefault();
+                alert('Please add at least one item to your order');
+                return false;
+            }
+
+            // Add hidden inputs for menu items and quantities
+            for (const itemId in cart) {
+                const qty = cart[itemId];
+                if (qty > 0) {
+                    $(this).append(`<input type="hidden" name="menu_item" value="${itemId}">`);
+                    $(this).append(`<input type="hidden" name="quantity" value="${qty}">`);
+                }
+            }
+        });
+
+        // Initialize button states
+        $('.qty-decrease').prop('disabled', true);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}FoodExpress - Home{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1 class="display-4 fw-bold mb-4">Delicious Food Delivered to Your Door</h1>
+            <p class="lead mb-4">Order your favorite meals from our menu and enjoy a fast delivery to your home. Fresh ingredients, tasty meals, and quick service.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{% url 'place_order' %}" class="btn btn-primary btn-lg px-4 me-md-2">Order Now</a>
+                <a href="{% url 'menu' %}" class="btn btn-outline-primary btn-lg px-4">View Menu</a>
+            </div>
+            <div class="mt-4 d-flex gap-4">
+                <div>
+                    <i class="fas fa-clock text-primary"></i>
+                    <span class="ms-2">30 min delivery</span>
+                </div>
+                <div>
+                    <i class="fas fa-star text-primary"></i>
+                    <span class="ms-2">4.8 rating</span>
+                </div>
+                <div>
+                    <i class="fas fa-map-marker-alt text-primary"></i>
+                    <span class="ms-2">Free delivery</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <img src="https://placehold.co/600x400" alt="Delicious food" class="img-fluid rounded shadow-lg">
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">Our Modules</h2>
+            <p class="lead">Explore the different parts of our food ordering system</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Customer Module</h3>
+                    <p class="card-text">Browse our menu, place orders, and get food delivered to your doorstep.</p>
+                    <a href="{% url 'menu' %}" class="btn btn-primary">Order Food</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Manager Module</h3>
+                    <p class="card-text">Manage orders with a Kanban board, track status, and assign deliveries.</p>
+                    <a href="{% url 'manager_dashboard' %}" class="btn btn-primary">Manager Dashboard</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Owner Module</h3>
+                    <p class="card-text">View sales reports, track expenses, and monitor business performance.</p>
+                    <a href="{% url 'owner_dashboard' %}" class="btn btn-primary">Owner Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

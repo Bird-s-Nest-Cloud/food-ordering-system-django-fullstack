@@ -1,0 +1,882 @@
+{% extends 'base.html' %}
+
+{% block title %}FoodExpress - Manager Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #e74c3c;
+        --primary-dark: #c0392b;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --bg-light: #f8f9fa;
+        --text-dark: #2c3e50;
+        --border-radius: 15px;
+        --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding-bottom: 2rem;
+    }
+
+    .dashboard-container {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 3rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 1400px) {
+        .kanban-board {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    }
+
+    .kanban-column {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kanban-column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid;
+    }
+
+    .kanban-column.new .kanban-column-header {
+        border-color: var(--info-color);
+    }
+
+    .kanban-column.kitchen .kanban-column-header {
+        border-color: var(--warning-color);
+    }
+
+    .kanban-column.ready .kanban-column-header {
+        border-color: var(--success-color);
+    }
+
+    .kanban-column.delivered .kanban-column-header {
+        border-color: #95a5a6;
+    }
+
+    .kanban-column.cancelled .kanban-column-header {
+        border-color: var(--danger-color);
+    }
+
+    .kanban-column-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .kanban-column-title i {
+        font-size: 1.5rem;
+    }
+
+    .kanban-column.new .kanban-column-title i {
+        color: var(--info-color);
+    }
+
+    .kanban-column.kitchen .kanban-column-title i {
+        color: var(--warning-color);
+    }
+
+    .kanban-column.ready .kanban-column-title i {
+        color: var(--success-color);
+    }
+
+    .kanban-column.delivered .kanban-column-title i {
+        color: #95a5a6;
+    }
+
+    .kanban-column.cancelled .kanban-column-title i {
+        color: var(--danger-color);
+    }
+
+    .kanban-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .kanban-column.new .kanban-badge {
+        background: var(--info-color);
+        color: white;
+    }
+
+    .kanban-column.kitchen .kanban-badge {
+        background: var(--warning-color);
+        color: white;
+    }
+
+    .kanban-column.ready .kanban-badge {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .kanban-column.delivered .kanban-badge {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .kanban-column.cancelled .kanban-badge {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .kanban-items {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .kanban-items::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .kanban-items::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .kanban-items::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    .kanban-items::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+        position: relative;
+    }
+
+    .order-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .order-card.new {
+        border-left-color: var(--info-color);
+    }
+
+    .order-card.kitchen {
+        border-left-color: var(--warning-color);
+    }
+
+    .order-card.ready {
+        border-left-color: var(--success-color);
+    }
+
+    .order-card.delivered {
+        border-left-color: #95a5a6;
+    }
+
+    .order-card.cancelled {
+        border-left-color: var(--danger-color);
+        opacity: 0.8;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #ecf0f1;
+    }
+
+    .order-id {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .order-status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .order-info {
+        margin-bottom: 1rem;
+    }
+
+    .order-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .order-info-item i {
+        width: 18px;
+        color: var(--primary-color);
+    }
+
+    .order-items {
+        background: var(--bg-light);
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .order-items-title {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .order-items-title i {
+        color: var(--primary-color);
+    }
+
+    .order-item-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .order-item-list li {
+        padding: 0.3rem 0;
+        font-size: 0.85rem;
+        color: #555;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .order-item-list li:not(:last-child) {
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    .order-total {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary-action {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary-action:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-success-action {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .btn-success-action:hover {
+        background: #229954;
+    }
+
+    .btn-danger-action {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .btn-danger-action:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-warning-action {
+        background: var(--warning-color);
+        color: white;
+    }
+
+    .btn-warning-action:hover {
+        background: #e67e22;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #95a5a6;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .delivery-person-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .delivery-person-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+
+    .delivery-info {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .time-badge {
+        background: var(--bg-light);
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tasks"></i> Manager Dashboard</h1>
+        <p>Manage and track all orders in real-time</p>
+    </div>
+    
+    <div class="kanban-board">
+        <!-- New Orders Column -->
+        <div class="kanban-column new">
+            <div class="kanban-column-header">
+                <div class="kanban-column-title">
+                    <i class="fas fa-bell"></i>
+                    <span>New Orders</span>
+                </div>
+                <span class="kanban-badge">{{ new_orders.count }}</span>
+            </div>
+            <div class="kanban-items">
+                {% for order in new_orders %}
+                <div class="order-card new" data-order-id="{{ order.id }}" data-status="new">
+                    <div class="order-header">
+                        <div class="order-id">#{{ order.id }}</div>
+                        <span class="order-status-badge" style="background: var(--info-color); color: white;">New</span>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-info-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ order.customer.name }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ order.customer.phone }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="time-badge">{{ order.created_at|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-items-title">
+                            <i class="fas fa-utensils"></i>
+                            <span>Items</span>
+                        </div>
+                        <ul class="order-item-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">{{ item.menu_item.price|floatformat:2 }}৳</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">{{ order.total_price|floatformat:2 }}৳</div>
+                        <div class="order-actions">
+                            <button class="btn-action btn-warning-action move-order" data-order-id="{{ order.id }}" data-target-status="kitchen">
+                                <i class="fas fa-arrow-right"></i>
+                                <span>Kitchen</span>
+                            </button>
+                            <button class="btn-action btn-danger-action cancel-order" data-order-id="{{ order.id }}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No new orders</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- In Kitchen Column -->
+        <div class="kanban-column kitchen">
+            <div class="kanban-column-header">
+                <div class="kanban-column-title">
+                    <i class="fas fa-fire"></i>
+                    <span>In Kitchen</span>
+                </div>
+                <span class="kanban-badge">{{ kitchen_orders.count }}</span>
+            </div>
+            <div class="kanban-items">
+                {% for order in kitchen_orders %}
+                <div class="order-card kitchen" data-order-id="{{ order.id }}" data-status="kitchen">
+                    <div class="order-header">
+                        <div class="order-id">#{{ order.id }}</div>
+                        <span class="order-status-badge" style="background: var(--warning-color); color: white;">Kitchen</span>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-info-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ order.customer.name }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ order.customer.phone }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="time-badge">{{ order.created_at|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-items-title">
+                            <i class="fas fa-utensils"></i>
+                            <span>Items</span>
+                        </div>
+                        <ul class="order-item-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">{{ item.menu_item.price|floatformat:2 }}৳</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">{{ order.total_price|floatformat:2 }}৳</div>
+                        <div class="order-actions">
+                            <button class="btn-action btn-success-action move-order" data-order-id="{{ order.id }}" data-target-status="ready">
+                                <i class="fas fa-check"></i>
+                                <span>Ready</span>
+                            </button>
+                            <button class="btn-action btn-danger-action cancel-order" data-order-id="{{ order.id }}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No orders in kitchen</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Ready for Delivery Column -->
+        <div class="kanban-column ready">
+            <div class="kanban-column-header">
+                <div class="kanban-column-title">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Ready</span>
+                </div>
+                <span class="kanban-badge">{{ ready_orders.count }}</span>
+            </div>
+            <div class="kanban-items">
+                {% for order in ready_orders %}
+                <div class="order-card ready" data-order-id="{{ order.id }}" data-status="ready">
+                    <div class="order-header">
+                        <div class="order-id">#{{ order.id }}</div>
+                        <span class="order-status-badge" style="background: var(--success-color); color: white;">Ready</span>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-info-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ order.customer.name }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ order.customer.phone }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span style="font-size: 0.8rem;">{{ order.customer.address|truncatewords:8 }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="time-badge">{{ order.created_at|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-items-title">
+                            <i class="fas fa-utensils"></i>
+                            <span>Items</span>
+                        </div>
+                        <ul class="order-item-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">{{ item.menu_item.price|floatformat:2 }}৳</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="order-info">
+                        <input type="text" class="delivery-person-input" id="delivery-person-{{ order.id }}" placeholder="Delivery person name">
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">{{ order.total_price|floatformat:2 }}৳</div>
+                        <div class="order-actions">
+                            <button class="btn-action btn-primary-action deliver-order" data-order-id="{{ order.id }}">
+                                <i class="fas fa-truck"></i>
+                                <span>Deliver</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No orders ready</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Delivered Column (Today Only) -->
+        <div class="kanban-column delivered">
+            <div class="kanban-column-header">
+                <div class="kanban-column-title">
+                    <i class="fas fa-check-double"></i>
+                    <span>Delivered (Today)</span>
+                </div>
+                <span class="kanban-badge">{{ delivered_orders.count }}</span>
+            </div>
+            <div class="kanban-items">
+                {% for order in delivered_orders %}
+                <div class="order-card delivered" data-order-id="{{ order.id }}" data-status="delivered">
+                    <div class="order-header">
+                        <div class="order-id">#{{ order.id }}</div>
+                        <span class="order-status-badge" style="background: #95a5a6; color: white;">Delivered</span>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-info-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ order.customer.name }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ order.customer.phone }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="time-badge">{{ order.created_at|time:"H:i" }}</span>
+                        </div>
+                        {% if order.delivery %}
+                        <div class="order-info-item">
+                            <i class="fas fa-user-tie"></i>
+                            <span class="delivery-info">By: {{ order.delivery.delivery_person }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="order-items">
+                        <div class="order-items-title">
+                            <i class="fas fa-utensils"></i>
+                            <span>Items</span>
+                        </div>
+                        <ul class="order-item-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">{{ item.menu_item.price|floatformat:2 }}৳</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">{{ order.total_price|floatformat:2 }}৳</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No deliveries today</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Cancelled Column -->
+        <div class="kanban-column cancelled">
+            <div class="kanban-column-header">
+                <div class="kanban-column-title">
+                    <i class="fas fa-ban"></i>
+                    <span>Cancelled</span>
+                </div>
+                <span class="kanban-badge">{{ cancelled_orders.count }}</span>
+            </div>
+            <div class="kanban-items">
+                {% for order in cancelled_orders %}
+                <div class="order-card cancelled" data-order-id="{{ order.id }}" data-status="cancelled">
+                    <div class="order-header">
+                        <div class="order-id">#{{ order.id }}</div>
+                        <span class="order-status-badge" style="background: var(--danger-color); color: white;">Cancelled</span>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-info-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ order.customer.name }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ order.customer.phone }}</span>
+                        </div>
+                        <div class="order-info-item">
+                            <i class="fas fa-clock"></i>
+                            <span class="time-badge">{{ order.created_at|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-items-title">
+                            <i class="fas fa-utensils"></i>
+                            <span>Items</span>
+                        </div>
+                        <ul class="order-item-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">{{ item.menu_item.price|floatformat:2 }}৳</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">{{ order.total_price|floatformat:2 }}৳</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No cancelled orders</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $(document).ready(function() {
+        // Handle moving orders to next status
+        $('.move-order').click(function() {
+            const orderId = $(this).data('order-id');
+            const targetStatus = $(this).data('target-status');
+            
+            // Send AJAX request to update order status
+            $.ajax({
+                url: `/manager/order/${orderId}/update/`,
+                type: 'POST',
+                data: JSON.stringify({
+                    status: targetStatus
+                }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() || getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Reload the page to show updated status
+                        location.reload();
+                    } else {
+                        alert('Failed to update order status');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating the order');
+                }
+            });
+        });
+        
+        // Handle cancelling orders
+        $('.cancel-order').click(function() {
+            const orderId = $(this).data('order-id');
+            
+            if (!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+            
+            // Send AJAX request to cancel order
+            $.ajax({
+                url: `/manager/order/${orderId}/update/`,
+                type: 'POST',
+                data: JSON.stringify({
+                    status: 'cancelled'
+                }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() || getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Reload the page to show updated status
+                        location.reload();
+                    } else {
+                        alert('Failed to cancel order');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while cancelling the order');
+                }
+            });
+        });
+        
+        // Handle marking orders as delivered
+        $('.deliver-order').click(function() {
+            const orderId = $(this).data('order-id');
+            const deliveryPerson = $(`#delivery-person-${orderId}`).val();
+            
+            if (!deliveryPerson || deliveryPerson.trim() === '') {
+                alert('Please enter the delivery person name');
+                $(`#delivery-person-${orderId}`).focus();
+                return;
+            }
+            
+            // Send AJAX request to update order status
+            $.ajax({
+                url: `/manager/order/${orderId}/update/`,
+                type: 'POST',
+                data: JSON.stringify({
+                    status: 'delivered',
+                    delivery_person: deliveryPerson.trim()
+                }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() || getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Reload the page to show updated status
+                        location.reload();
+                    } else {
+                        alert('Failed to update order status');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating the order');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

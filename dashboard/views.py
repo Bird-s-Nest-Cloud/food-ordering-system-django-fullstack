@@ -57,8 +57,6 @@ def manager_dashboard(request):
         'preparing_orders_count': preparing_orders_count,
         'ready_orders_count': ready_orders_count,
         'delivered_orders_count': delivered_orders_count,
-          ready_orders_count,
-        'delivered_orders_count': delivered_orders_count,
         'today_revenue': today_revenue,
         'popular_items': popular_items,
         'recent_orders': recent_orders,
